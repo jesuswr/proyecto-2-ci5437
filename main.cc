@@ -125,3 +125,34 @@ int main(int argc, const char **argv) {
     return 0;
 }
 
+
+
+int negamax(state_t state, int depth, int color, bool use_tt = false){
+    if(state.terminal()) return color * state.value(); 
+
+    int score = - std::numeric_limits<int>::max()
+
+    //for(auto child : state){
+    //    score = max(score, - negamax(child, -color))
+    while(){
+        auto child = state.move(color, state.pos()); // ?
+        score = max(score, - negamax(child, depth + 1, -color))
+    }
+    
+    return score;
+}
+
+int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_tt = false){
+    //
+    return 0;
+}
+
+int scout(state_t state, int depth, int color, bool use_tt = false){
+    //
+    return 0;
+}
+
+int negascout(state_t state, int depth, int alpha, int beta, int color, bool use_tt = false){
+    //
+    return 0;
+}
