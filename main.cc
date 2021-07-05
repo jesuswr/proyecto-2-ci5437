@@ -115,7 +115,7 @@ int main(int argc, const char **argv) {
         float elapsed_time = Utils::read_time_in_seconds() - start_time;
 
         cout << npv + 1 - i << ". " << (color == 1 ? "Black" : "White") << " moves: "
-             << "value=" << color * value
+             << "value=" << (algorithm <= 2 ? color : 1) * value
              << ", #expanded=" << expanded
              << ", #generated=" << generated
              << ", seconds=" << elapsed_time
@@ -181,9 +181,52 @@ int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_t
     return score;
 }
 
+// 0 is > ; 1 is >=
+bool test(state_t state, int color, int score, bool cond) {
+    if (state.terminal())
+        return (cond ? state.value() >= score : state.value() > score);
+
+    auto moves = state.get_moves(color == 1);
+    for (int i = 0; i < (int)moves.size(); ++i) {
+        auto child = state.move(color == 1, moves[i]);
+        if (color == 1 && test(child, -color, score, cond))
+            return true;
+        if (color == -1 && !test(child, -color, score, cond))
+            return false;
+    }
+    if (moves.size() == 0) {
+        if (color == 1 && test(state, -color, score, cond))
+            return true;
+        if (color == -1 && !test(state, -color, score, cond))
+            return false;
+    }
+    return color == -1;
+}
+
 int scout(state_t state, int depth, int color, bool use_tt) {
-    //
-    return 0;
+    ++generated;
+    if (state.terminal())
+        return state.value();
+
+    int score = 0;
+    auto moves = state.get_moves(color == 1);
+    for (int i = 0; i < (int)moves.size(); ++i) {
+        auto child = state.move(color == 1, moves[i]);
+        // first child
+        if (i == 0)
+            score = scout(child, depth - 1, -color);
+        else {
+            if (color == 1 && test(child, -color, score, 0))
+                score = scout(child, depth - 1, -color);
+            if (color == -1 && !test(child, -color, score, 1))
+                score = scout(child, depth - 1, -color);
+        }
+    }
+    // no child, pass turn
+    if (moves.size() == 0)
+        score = scout(state, depth - 1, -color);
+    ++expanded;
+    return score;
 }
 
 int negascout(state_t state, int depth, int alpha, int beta, int color, bool use_tt) {
