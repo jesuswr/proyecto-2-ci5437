@@ -181,7 +181,7 @@ int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_t
     return score;
 }
 
-// 0 is > ; 1 is >=
+// cond : 0 es > ; 1 es >=
 bool test(state_t state, int color, int score, bool cond) {
     if (state.terminal())
         return (cond ? state.value() >= score : state.value() > score);
@@ -212,7 +212,7 @@ int scout(state_t state, int depth, int color, bool use_tt) {
     auto moves = state.get_moves(color == 1);
     for (int i = 0; i < (int)moves.size(); ++i) {
         auto child = state.move(color == 1, moves[i]);
-        // first child
+        // primer hijo
         if (i == 0)
             score = scout(child, depth - 1, -color);
         else {
@@ -222,7 +222,7 @@ int scout(state_t state, int depth, int color, bool use_tt) {
                 score = scout(child, depth - 1, -color);
         }
     }
-    // no child, pass turn
+    // no se logro poner fichas, pasar turno
     if (moves.size() == 0)
         score = scout(state, depth - 1, -color);
     ++expanded;
