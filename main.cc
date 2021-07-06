@@ -16,6 +16,7 @@ using namespace std;
 unsigned expanded = 0;
 unsigned generated = 0;
 int tt_threshold = 32; // threshold to save entries in TT
+const int INF = 200;
 
 // Transposition table (it is not necessary to implement TT)
 struct stored_info_t {
@@ -39,10 +40,10 @@ hash_table_t TTable[2];
 //int maxmin(state_t state, int depth, bool use_tt);
 //int minmax(state_t state, int depth, bool use_tt = false);
 //int maxmin(state_t state, int depth, bool use_tt = false);
-int negamax(state_t state, int depth, int color, bool use_tt = false);
-int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_tt = false);
-int scout(state_t state, int depth, int color, bool use_tt = false);
-int negascout(state_t state, int depth, int alpha, int beta, int color, bool use_tt = false);
+int negamax(state_t state, int color);
+int negamax(state_t state, int alpha, int beta, int color);
+int scout(state_t state, int color);
+int negascout(state_t state, int alpha, int beta, int color);
 
 int main(int argc, const char **argv) {
     state_t pv[128];
@@ -96,15 +97,14 @@ int main(int argc, const char **argv) {
         int color = i % 2 == 1 ? 1 : -1;
 
         try {
-            // quitar los 69 despues
             if ( algorithm == 1 ) {
-                value = negamax(pv[i], 69, color, use_tt);
+                value = negamax(pv[i], color);
             } else if ( algorithm == 2 ) {
-                value = negamax(pv[i], 69, -200, 200, color, use_tt);
+                value = negamax(pv[i], -INF, INF, color);
             } else if ( algorithm == 3 ) {
-                value = scout(pv[i], 69, color, use_tt);
+                value = scout(pv[i], color);
             } else if ( algorithm == 4 ) {
-                value = negascout(pv[i], 69, -200, 200, color, use_tt);
+                value = negascout(pv[i], -INF, INF, color);
             }
         } catch ( const bad_alloc &e ) {
             cout << "size TT[0]: size=" << TTable[0].size() << ", #buckets=" << TTable[0].bucket_count() << endl;
@@ -115,7 +115,7 @@ int main(int argc, const char **argv) {
         float elapsed_time = Utils::read_time_in_seconds() - start_time;
 
         cout << npv + 1 - i << ". " << (color == 1 ? "Black" : "White") << " moves: "
-             << "value=" << (algorithm <= 2 ? color : 1) * value
+             << "value=" << (algorithm != 3 ? color : 1) * value
              << ", #expanded=" << expanded
              << ", #generated=" << generated
              << ", seconds=" << elapsed_time
@@ -127,14 +127,12 @@ int main(int argc, const char **argv) {
 }
 
 
-// quitar depth despues, no se usa
-int negamax(state_t state, int depth, int color, bool use_tt) {
+int negamax(state_t state, int color) {
     ++generated;
     if (state.terminal())
         return color * state.value();
 
-    // -300 por comodidad, cambiar despues
-    int score = -300;
+    int score = -INF;
     // booleano para saber si logre moverme colocando alguna ficha
     // o si tengo que pasar el turno al otro
     bool moved = false;
@@ -142,24 +140,23 @@ int negamax(state_t state, int depth, int color, bool use_tt) {
         moved = true;
         score = max(
                     score,
-                    -negamax(state.move(color == 1, p), depth - 1, -color, use_tt)
+                    -negamax(state.move(color == 1, p), -color)
                 );
     }
     // si no logre moverme sigo en el mismo estado pero cambio el color
     if (!moved)
-        score = -negamax(state, depth - 1, -color, use_tt);
+        score = -negamax(state, -color);
 
     ++expanded;
     return score;
 }
 
-int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_tt) {
+int negamax(state_t state, int alpha, int beta, int color) {
     ++generated;
     if (state.terminal())
         return color * state.value();
 
-    // -200 por comodidad, cambiar despues
-    int score = -200;
+    int score = -INF;
     // booleano para saber si logre moverme colocando alguna ficha
     // o si tengo que pasar el turno al otro
     bool moved = false;
@@ -167,7 +164,7 @@ int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_t
         moved = true;
         score = max(
                     score,
-                    -negamax(state.move(color == 1, p), depth - 1, -beta, -alpha, -color, use_tt)
+                    -negamax(state.move(color == 1, p), -beta, -alpha, -color)
                 );
         alpha = max(alpha, score);
         if (alpha >= beta)
@@ -175,7 +172,7 @@ int negamax(state_t state, int depth, int alpha, int beta, int color, bool use_t
     }
     // si no logre moverme sigo en el mismo estado pero cambio el color
     if (!moved)
-        score = -negamax(state, depth - 1, -beta, -alpha, -color, use_tt);
+        score = -negamax(state, -beta, -alpha, -color);
 
     ++expanded;
     return score;
@@ -203,7 +200,7 @@ bool test(state_t state, int color, int score, bool cond) {
     return color == -1;
 }
 
-int scout(state_t state, int depth, int color, bool use_tt) {
+int scout(state_t state, int color) {
     ++generated;
     if (state.terminal())
         return state.value();
@@ -214,51 +211,52 @@ int scout(state_t state, int depth, int color, bool use_tt) {
         auto child = state.move(color == 1, moves[i]);
         // primer hijo
         if (i == 0)
-            score = scout(child, depth - 1, -color);
+            score = scout(child, -color);
         else {
             if (color == 1 && test(child, -color, score, 0))
-                score = scout(child, depth - 1, -color);
+                score = scout(child, -color);
             if (color == -1 && !test(child, -color, score, 1))
-                score = scout(child, depth - 1, -color);
+                score = scout(child, -color);
         }
     }
     // no se logro poner fichas, pasar turno
     if (moves.size() == 0)
-        score = scout(state, depth - 1, -color);
+        score = scout(state, -color);
+
     ++expanded;
     return score;
 }
 
-int negascout(state_t state, int depth, int alpha, int beta, int color, bool use_tt) {
-    
+int negascout(state_t state, int alpha, int beta, int color) {
+
     ++generated;
     if (state.terminal())
         return color * state.value();
-    
+
     int score;
     auto moves = state.get_moves(color == 1);
     for (int i = 0; i < (int)moves.size(); ++i) {
         auto child = state.move(color == 1, moves[i]);
         // primer hijo
         if (i == 0)
-            score = -negascout(child, depth - 1, -beta, -alpha, -color, use_tt);
+            score = -negascout(child, -beta, -alpha, -color);
         else {
 
-            score = -negascout(child, depth - 1, -alpha - 1, -alpha, -color, use_tt);
+            score = -negascout(child, -alpha - 1, -alpha, -color);
             if (alpha < score && score < beta)
-                score = -negascout(child, depth - 1, -beta, -score, -color, use_tt);
+                score = -negascout(child, -beta, -score, -color);
         }
 
         alpha = max(alpha, score);
-        if (alpha >= beta) 
+        if (alpha >= beta)
             break;
     }
 
     // no se logro poner fichas, pasar turno
     if (moves.size() == 0)
-        alpha = -negascout(state, depth - 1, -beta, -alpha, -color, use_tt);
+        alpha = -negascout(state, -beta, -alpha, -color);
 
-    
+
     ++expanded;
     return alpha;
 }
