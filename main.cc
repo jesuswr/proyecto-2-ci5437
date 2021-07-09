@@ -180,9 +180,12 @@ int negamax(state_t state, int alpha, int beta, int color) {
 
 // cond : 0 es > ; 1 es >=
 bool test(state_t state, int color, int score, bool cond) {
+
+    ++generated;
     if (state.terminal())
         return (cond ? state.value() >= score : state.value() > score);
 
+    ++expanded;
     auto moves = state.get_moves(color == 1);
     for (int i = 0; i < (int)moves.size(); ++i) {
         auto child = state.move(color == 1, moves[i]);
@@ -191,12 +194,14 @@ bool test(state_t state, int color, int score, bool cond) {
         if (color == -1 && !test(child, -color, score, cond))
             return false;
     }
+
     if (moves.size() == 0) {
         if (color == 1 && test(state, -color, score, cond))
             return true;
         if (color == -1 && !test(state, -color, score, cond))
             return false;
     }
+
     return color == -1;
 }
 
