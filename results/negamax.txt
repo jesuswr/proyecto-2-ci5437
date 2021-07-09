@@ -1,0 +1,21 @@
+Extracting principal variation (PV) with 33 plays ... done!
+Algorithm: Negamax (minmax version)
+Moving along PV:
+34. White moves: value=-4, #expanded=0, #generated=1, seconds=4.00003e-06, #generated/second=249998
+33. Black moves: value=-4, #expanded=1, #generated=2, seconds=9.00007e-06, #generated/second=222221
+32. White moves: value=-4, #expanded=3, #generated=5, seconds=1.40001e-05, #generated/second=357140
+31. Black moves: value=-4, #expanded=4, #generated=6, seconds=9.00007e-06, #generated/second=666662
+30. White moves: value=-4, #expanded=9, #generated=13, seconds=2.29999e-05, #generated/second=565219
+29. Black moves: value=-4, #expanded=10, #generated=14, seconds=2.00002e-05, #generated/second=699995
+28. White moves: value=-4, #expanded=64, #generated=91, seconds=0.00013, #generated/second=699998
+27. Black moves: value=-4, #expanded=125, #generated=177, seconds=0.00023, #generated/second=769564
+26. White moves: value=-4, #expanded=744, #generated=1049, seconds=0.001419, #generated/second=739253
+25. Black moves: value=-4, #expanded=3168, #generated=4498, seconds=0.001696, #generated/second=2.65212e+06
+24. White moves: value=-4, #expanded=8597, #generated=11978, seconds=0.003068, #generated/second=3.90417e+06
+23. Black moves: value=-4, #expanded=55127, #generated=76826, seconds=0.020007, #generated/second=3.83996e+06
+22. White moves: value=-4, #expanded=308479, #generated=428402, seconds=0.106197, #generated/second=4.03403e+06
+21. Black moves: value=-4, #expanded=2525249, #generated=3478735, seconds=0.849919, #generated/second=4.09302e+06
+20. White moves: value=-4, #expanded=9459570, #generated=13078933, seconds=3.30675, #generated/second=3.95522e+06
+19. Black moves: value=-4, #expanded=65121519, #generated=90647895, seconds=25.5164, #generated/second=3.55254e+06
+18. White moves: value=-4, #expanded=625084814, #generated=876269598, seconds=287.691, #generated/second=3.04587e+06
+17. Black moves: value=-4, #expanded=3999381161, #generated=1305006091, seconds=1686.39, #generated/second=773847
